@@ -1,0 +1,23 @@
+{
+  "name": "playwright-portfolio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Julia-Lazar/playwright-portfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Julia-Lazar/playwright-portfolio/issues"
+  },
+  "homepage": "https://github.com/Julia-Lazar/playwright-portfolio#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^26.6.5"
+  }
+}
