@@ -17,7 +17,7 @@ test('booking CRUD chain @smoke', async ({ request }) => {
 
   const id = await test.step('create', async () => {
     const res = await request.post('/booking', { data: newBooking });
-    expect(res.status()).toBe(418);
+    expect(res.status()).toBe(200); 
     const body = await res.json();
     expect(body.booking).toMatchObject(newBooking);
     return body.bookingid as number;              // dynamic ID, never hard-coded
