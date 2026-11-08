@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures/fixtures';
+import { uiTest as test, expect } from '../../fixtures/fixtures';
 
 test.beforeEach(async ({ inventoryPage }) => {
   await inventoryPage.goto();                     // already logged in (storageState)

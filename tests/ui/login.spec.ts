@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures/fixtures';
+import { uiTest as test, expect } from '../../fixtures/fixtures';
 
 // these tests need a logged-OUT browser, so drop the saved session
 test.use({ storageState: { cookies: [], origins: [] } });

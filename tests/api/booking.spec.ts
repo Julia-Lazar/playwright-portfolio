@@ -1,67 +1,35 @@
-import { test, expect, type APIRequestContext } from '@playwright/test';
+import { apiTest as test, expect, newBooking, getAuthHeaders } from '../../fixtures/fixtures';
 
-async function getAuthHeaders(request: APIRequestContext) {
-  const auth = await request.post('/auth', { data: { username: 'admin', password: 'password123' } });
-  expect(auth.ok()).toBeTruthy();
-  const { token } = await auth.json();
-  return { Cookie: `token=${token}` };
-}
-
-const newBooking = {
-  firstname: 'Ada',
-  lastname: 'Lovelace',
-  totalprice: 150,
-  depositpaid: true,
-  bookingdates: { checkin: '2026-11-01', checkout: '2026-11-05' },
-  additionalneeds: 'Breakfast',
-};
-
-test('booking CRUD chain @smoke', async ({ request }) => {
+test('booking CRUD chain @smoke', async ({ request, booking }) => {
+  // create: done by the `booking` fixture, which also checks the 200 status
   const headers = await getAuthHeaders(request);
 
-  const id = await test.step('create', async () => {
-    const res = await request.post('/booking', { data: newBooking });
-    expect(res.status()).toBe(200);
-    const body = await res.json();
-    expect(body.booking).toMatchObject(newBooking);
-    return body.bookingid as number;              // dynamic ID, never hard-coded
-  });
-
   await test.step('read', async () => {
-    const res = await request.get(`/booking/${id}`);
+    const res = await request.get(`/booking/${booking}`);
     expect(res.ok()).toBeTruthy();
-    expect(await res.json()).toMatchObject({ firstname: 'Ada', totalprice: 150 });
+    expect(await res.json()).toMatchObject(newBooking);   // what we created is what we get back
   });
 
   await test.step('update (PATCH)', async () => {
-    const res = await request.patch(`/booking/${id}`, { headers, data: { totalprice: 200 } });
+    const newPrice = newBooking.totalprice + 1;   // always differs, so the PATCH really changes something
+    const res = await request.patch(`/booking/${booking}`, { headers, data: { totalprice: newPrice } });
     expect(res.status()).toBe(200);
-    expect((await res.json()).totalprice).toBe(200);
+    expect((await res.json()).totalprice).toBe(newPrice);
   });
 
   await test.step('delete', async () => {
-    const res = await request.delete(`/booking/${id}`, { headers });
+    const res = await request.delete(`/booking/${booking}`, { headers });
     expect(res.status()).toBe(201);               // this API's quirk: 201, not 204
-    expect((await request.get(`/booking/${id}`)).status()).toBe(404);
+    expect((await request.get(`/booking/${booking}`)).status()).toBe(404);
   });
 });
 
-test('updating without a token is forbidden', async ({ request }) => {
-  // own booking: the test never relies on data it did not create
-  const create = await request.post('/booking', { data: newBooking });
-  expect(create.status()).toBe(200);
-  const { bookingid } = await create.json();
+test('updating without a token is forbidden', async ({ request, booking }) => {
+  // always differs from the original, so the "unchanged" check below is meaningful
+  const res = await request.patch(`/booking/${booking}`, { data: { totalprice: newBooking.totalprice + 1 } });
+  expect(res.status()).toBe(403);
 
-  try {
-    // always differs from the original, so the "unchanged" check below is meaningful
-    const res = await request.patch(`/booking/${bookingid}`, { data: { totalprice: newBooking.totalprice + 1 } });
-    expect(res.status()).toBe(403);
-
-    // 403 alone is not enough: the booking must also stay unchanged
-    const after = await request.get(`/booking/${bookingid}`);
-    expect((await after.json()).totalprice).toBe(newBooking.totalprice);
-  } finally {
-    // cleanup runs even when an assertion above fails
-    await request.delete(`/booking/${bookingid}`, { headers: await getAuthHeaders(request) });
-  }
+  // 403 alone is not enough: the booking must also stay unchanged
+  const after = await request.get(`/booking/${booking}`);
+  expect((await after.json()).totalprice).toBe(newBooking.totalprice);
 });
