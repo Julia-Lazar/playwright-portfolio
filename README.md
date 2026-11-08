@@ -27,7 +27,7 @@ The trade-off: the UI and API suites test two unrelated products, so they don't 
 - **Log in once** (`auth.setup.ts` + `storageState`): faster, and login tests use a fresh browser on purpose.
 - **Stable locators**: `getByTestId` with the app's `data-test` attributes, web-first assertions, no hard waits.
 - **API tests create their own data** and use the dynamic ID: the public API is shared and resets often.
-- **Readable reports**: the API chain is split into `test.step` blocks (create → read → update → delete), so a failure points to the broken stage.
+- **Readable reports**: the API chain is split into `test.step` blocks (read → update → delete), so a failure points to the broken stage. Creating the booking is done by the `booking` fixture, which also deletes it after the test, even when the test fails.
 - **CI**: runs on every push and pull request; retries only on CI, trace on first retry, HTML report uploaded as an artifact even when tests fail.
 
 ## Run it
