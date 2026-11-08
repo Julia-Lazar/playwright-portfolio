@@ -1,4 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type APIRequestContext } from '@playwright/test';
+
+async function getAuthHeaders(request: APIRequestContext) {
+  const auth = await request.post('/auth', { data: { username: 'admin', password: 'password123' } });
+  expect(auth.ok()).toBeTruthy();
+  const { token } = await auth.json();
+  return { Cookie: `token=${token}` };
+}
 
 const newBooking = {
   firstname: 'Ada',
@@ -10,10 +17,7 @@ const newBooking = {
 };
 
 test('booking CRUD chain @smoke', async ({ request }) => {
-  const auth = await request.post('/auth', { data: { username: 'admin', password: 'password123' } });
-  expect(auth.ok()).toBeTruthy();
-  const { token } = await auth.json();
-  const headers = { Cookie: `token=${token}` };
+  const headers = await getAuthHeaders(request);
 
   const id = await test.step('create', async () => {
     const res = await request.post('/booking', { data: newBooking });
@@ -43,6 +47,21 @@ test('booking CRUD chain @smoke', async ({ request }) => {
 });
 
 test('updating without a token is forbidden', async ({ request }) => {
-  const res = await request.patch('/booking/1', { data: { totalprice: 1 } });
-  expect(res.status()).toBe(403);
+  // own booking: the test never relies on data it did not create
+  const create = await request.post('/booking', { data: newBooking });
+  expect(create.status()).toBe(200);
+  const { bookingid } = await create.json();
+
+  try {
+    // always differs from the original, so the "unchanged" check below is meaningful
+    const res = await request.patch(`/booking/${bookingid}`, { data: { totalprice: newBooking.totalprice + 1 } });
+    expect(res.status()).toBe(403);
+
+    // 403 alone is not enough: the booking must also stay unchanged
+    const after = await request.get(`/booking/${bookingid}`);
+    expect((await after.json()).totalprice).toBe(newBooking.totalprice);
+  } finally {
+    // cleanup runs even when an assertion above fails
+    await request.delete(`/booking/${bookingid}`, { headers: await getAuthHeaders(request) });
+  }
 });
