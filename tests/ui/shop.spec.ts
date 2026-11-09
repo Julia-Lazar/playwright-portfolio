@@ -5,10 +5,17 @@ test.beforeEach(async ({ inventoryPage }) => {
 });
 
 test('sorts products by price, low to high', async ({ inventoryPage }) => {
+  await expect(inventoryPage.prices.first()).toBeVisible();   // priceList() doesn't wait, so wait for the list first
+  // expected = the same prices, sorted by us. Comparing against it catches wrong order,
+  // missing products, an empty list and changed prices (just "is it sorted?" misses the last three)
+  const before = await inventoryPage.priceList();
+  const expected = [...before].sort((a, b) => a - b);
+
   await inventoryPage.sortBy('lohi');
-  await expect(inventoryPage.prices.first()).toHaveText('$7.99');   // wait for the re-sort
-  const prices = await inventoryPage.priceList();
-  expect(prices).toEqual([...prices].sort((a, b) => a - b));
+  // priceList() is a one-off snapshot, so toPass re-takes it until the re-sort is done
+  await expect(async () => {
+    expect(await inventoryPage.priceList()).toEqual(expected);
+  }).toPass({ timeout: 5000 });
 });
 
 test('adding two products updates the cart badge @smoke', async ({ inventoryPage }) => {
