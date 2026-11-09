@@ -10,7 +10,7 @@ End-to-end and API tests written in **Playwright + TypeScript**, running in **Gi
 | Login (valid + 3 negative cases, data-driven) | Sauce Demo (UI) | `tests/ui/login.spec.ts` |
 | Sorting, cart, full checkout, form validation | Sauce Demo (UI) | `tests/ui/shop.spec.ts` |
 | Booking CRUD chain + auth (403) | Restful Booker (API) | `tests/api/booking.spec.ts` |
-| Accessibility (axe-core) | Sauce Demo (UI) | `tests/ui/a11y.spec.ts` |
+| Accessibility (axe-core) on login, product list, product details, cart and checkout, data-driven | Sauce Demo (UI) | `tests/ui/a11y.spec.ts` |
 
 ### Systems under test
 - **UI:** [Sauce Demo](https://www.saucedemo.com), a demo shop with login, product list, cart and checkout.
@@ -41,6 +41,7 @@ npm run report      # open the HTML report
 
 ## Findings
 - **Restful Booker:** `DELETE /booking/{id}` returns **201 Created** instead of the usual **204 No Content** (or 200). The test asserts the actual behaviour and documents the quirk, so a future fix in the API will be noticed.
+- **Sauce Demo accessibility:** no `critical` or `serious` axe violations, which is the level the tests block on. Every page has a `moderate` best-practice issue: no level-one heading (`page-has-heading-one`), which screen-reader users rely on to jump to the main content. The login page also has content outside landmarks (`region`). These are reported here instead of failing the build.
 
 ## Next steps
 - [ ] **UI + API on one product**: add a suite for an app that has both layers, creating test data through the API and verifying it in the UI
