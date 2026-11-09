@@ -15,10 +15,10 @@ const badLogins = [
   { name: 'empty username',  user: '',                pass: 'secret_sauce', error: 'Username is required' },
 ];
 
-for (const c of badLogins) {
-  test(`login fails: ${c.name}`, async ({ loginPage }) => {
+for (const badLogin of badLogins) {
+  test(`login fails: ${badLogin.name}`, async ({ loginPage }) => {
     await loginPage.goto();
-    await loginPage.login(c.user, c.pass);
-    await expect(loginPage.error).toContainText(c.error);
+    await loginPage.login(badLogin.user, badLogin.pass);
+    await expect(loginPage.error).toContainText(badLogin.error);
   });
 }
