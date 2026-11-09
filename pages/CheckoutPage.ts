@@ -1,24 +1,41 @@
-import type { Page } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
 
 export class CheckoutPage {
-  constructor(private readonly page: Page) {}
+  readonly cartLink: Locator;
+  readonly checkoutButton: Locator;
+  readonly firstName: Locator;
+  readonly lastName: Locator;
+  readonly postalCode: Locator;
+  readonly continueButton: Locator;
+  readonly finishButton: Locator;
+  readonly error: Locator;
+  readonly completeHeader: Locator;
 
-  get error() { return this.page.getByTestId('error'); }
-  get completeHeader() { return this.page.getByTestId('complete-header'); }
+  constructor(page: Page) {
+    this.cartLink = page.getByTestId('shopping-cart-link');
+    this.checkoutButton = page.getByTestId('checkout');
+    this.firstName = page.getByTestId('firstName');
+    this.lastName = page.getByTestId('lastName');
+    this.postalCode = page.getByTestId('postalCode');
+    this.continueButton = page.getByTestId('continue');
+    this.finishButton = page.getByTestId('finish');
+    this.error = page.getByTestId('error');
+    this.completeHeader = page.getByTestId('complete-header');
+  }
 
   async start() {
-    await this.page.getByTestId('shopping-cart-link').click();
-    await this.page.getByTestId('checkout').click();
+    await this.cartLink.click();
+    await this.checkoutButton.click();
   }
 
   async fillInfo(first: string, last: string, zip: string) {
-    await this.page.getByTestId('firstName').fill(first);
-    await this.page.getByTestId('lastName').fill(last);
-    await this.page.getByTestId('postalCode').fill(zip);
-    await this.page.getByTestId('continue').click();
+    await this.firstName.fill(first);
+    await this.lastName.fill(last);
+    await this.postalCode.fill(zip);
+    await this.continueButton.click();
   }
 
   async finish() {
-    await this.page.getByTestId('finish').click();
+    await this.finishButton.click();
   }
 }
