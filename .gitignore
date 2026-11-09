@@ -1,5 +1,6 @@
 
 .auth/
+.claude/settings.local.json
 # Playwright
 node_modules/
 /test-results/

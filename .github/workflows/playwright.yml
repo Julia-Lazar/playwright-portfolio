@@ -16,6 +16,7 @@ jobs:
           node-version: lts/*
           cache: npm
       - run: npm ci
+      - run: npm run typecheck              # Playwright doesn't check types, so a type error would pass unnoticed
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
       - uses: actions/upload-artifact@v4
